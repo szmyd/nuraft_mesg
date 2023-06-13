@@ -15,7 +15,6 @@ jobs:
         prerelease: ["False"]
     uses: ./.github/workflows/build_commit.yml
     with:
-      branch: ${{ github.ref }}
       build-type: ${{ matrix.build-type }}
       malloc-impl: ${{ matrix.malloc-impl }}
       prerelease: ${{ matrix.prerelease }}
