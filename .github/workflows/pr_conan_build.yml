@@ -1,4 +1,4 @@
-name: Nuraft Mesg PR Build
+name: NuraftMesg PR Build
 
 on:
   pull_request:
@@ -6,15 +6,17 @@ on:
       - main
 
 jobs:
-  BuildCommit:
+  Build:
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         build-type: ["Debug", "Release"]
         malloc-impl: ["libc"]
         prerelease: ["False"]
     uses: ./.github/workflows/build_commit.yml
     with:
+      branch: ${{ github.ref }}
       build-type: ${{ matrix.build-type }}
       malloc-impl: ${{ matrix.malloc-impl }}
       prerelease: ${{ matrix.prerelease }}
+      testing: 'True'
