@@ -93,10 +93,9 @@ jobs:
     - name: Retrieve Recipe
       uses: actions/checkout@v3
       with:
-        repository: eBay/nuraft_mesg
         path: deps/nuraft_mesg
         ref: ${{ inputs.branch }}
-      if: ${{ steps.restore-cache-nuraftmesg.outputs.cache-hit != 'true' }}
+      if: ${{ inputs.testing == 'False' && steps.restore-cache-nuraftmesg.outputs.cache-hit != 'true' }}
 
     - name: Setup Python
       uses: actions/setup-python@v3
