@@ -75,6 +75,7 @@ class NuRaftMesgConan(ConanFile):
     def generate(self):
         # This generates "conan_toolchain.cmake" in self.generators_folder
         tc = CMakeToolchain(self)
+        tc.variables["SISL_SCRIPTS_PATH"] = self.dependencies['sisl'].cpp_info.builddirs[0]
         tc.variables["CMAKE_EXPORT_COMPILE_COMMANDS"] = "ON"
         tc.variables["CONAN_CMAKE_SILENT_OUTPUT"] = "ON"
         tc.variables["CTEST_OUTPUT_ON_FAILURE"] = "ON"
