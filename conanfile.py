@@ -1,7 +1,7 @@
 from conan import ConanFile
 from conan.errors import ConanInvalidConfiguration
 from conan.tools.build import check_min_cppstd
-from conan.tools.cmake import CMakeToolchain, CMakeDeps, CMake, cmake_layout
+from conan.tools.cmake import CMakeToolchain, CMakeDeps, CMake
 from conan.tools.files import copy
 from conan.tools.files import copy
 from os.path import join
@@ -66,11 +66,17 @@ class NuRaftMesgConan(ConanFile):
 
     def requirements(self):
         self.requires("boost/1.83.0", transitive_headers=True)
-        self.requires("sisl/[>=12.0, include_prerelease=True]@oss/master", transitive_headers=True)
+        self.requires("sisl/[>=12.0, include_prerelease=True]", transitive_headers=True)
         self.requires("nuraft/2.3.0", transitive_headers=True)
 
     def layout(self):
-        cmake_layout(self)
+        # Setup folder locations
+        self.folders.source = "."
+        self.folders.build = join("build", str(self.settings.build_type))
+        self.folders.generators = join(self.folders.build, "generators")
+
+        # Static headers
+        self.cpp.source.includedirs = ["include"]
 
     def generate(self):
         # This generates "conan_toolchain.cmake" in self.generators_folder
