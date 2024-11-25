@@ -47,13 +47,14 @@ class NuRaftGrpcConan(ConanFile):
             self.build_requires("jungle_logstore/nbi.20240729")
 
     def requirements(self):
-        self.requires("boost/1.79.0")
         self.requires("nuraft/nbi.2.4.1")
-        self.requires("openssl/1.1.1s")
         self.requires("sisl/8.6.8")
 
-        self.requires("lz4/1.9.4", override=True)
+        self.requires("boost/1.79.0", override=True)
         self.requires("grpc/1.50.1",    override=True)
+        self.requires("lz4/1.9.4", override=True)
+        self.requires("openssl/1.1.1s", override=True)
+        self.requires("zlib/1.2.13", override=True)
 
     def build(self):
         cmake = CMake(self)
