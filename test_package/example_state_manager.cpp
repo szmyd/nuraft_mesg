@@ -88,10 +88,7 @@ nuraft::ptr< nuraft::cluster_config > simple_state_mgr::load_config() {
 }
 
 nuraft::ptr< nuraft::log_store > simple_state_mgr::load_log_store() {
-    if (_srv_id == 3)
-        return nuraft::cs_new< nuraft::inmem_log_store >(1000);
-    else
-        return nuraft::cs_new< nuraft::inmem_log_store >();
+    return nuraft::cs_new< nuraft::inmem_log_store >(SISL_OPTIONS["lsn"].as<uint32_t>());
 }
 
 nuraft::ptr< nuraft::srv_state > simple_state_mgr::read_state() {

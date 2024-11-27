@@ -6,7 +6,7 @@ rm -rf logs/*
 bin/raft_server -sv 2 --server_id 0 --create 0 >/dev/null &
 bin/raft_server -sv 2 --server_id 1 >/dev/null &
 bin/raft_server -sv 2 --server_id 2 >/dev/null &
-bin/raft_server -sv 2 --server_id 3 >/dev/null &
+bin/raft_server -sv 2 --lsn 1000 --server_id 3 >/dev/null &
 sleep 15 
 
 bin/raft_client -sv 2 -g 0 --add 1 --server 0 >/dev/null &

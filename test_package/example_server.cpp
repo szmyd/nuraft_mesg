@@ -13,7 +13,8 @@
 
 SISL_OPTION_GROUP(server, (server_id, "", "server_id", "Servers ID (0-9)", cxxopts::value< uint32_t >(), ""),
                   (start_group, "", "create", "Group Name to create initialy", cxxopts::value< std::string >(), ""),
-                  (join_group, "", "join", "Group Name to join initialy", cxxopts::value< std::string >(), ""))
+                  (join_group, "", "join", "Group Name to join initialy", cxxopts::value< std::string >(), ""),
+                  (lsn, "", "lsn", "LSN to join group at", cxxopts::value< uint32_t >()->default_value("1"), "lsn"))
 
 SISL_OPTIONS_ENABLE(logging, server, nuraft_mesg)
 SISL_LOGGING_INIT(nuraft, nuraft_mesg, grpc_server, flip)
