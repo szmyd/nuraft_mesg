@@ -27,6 +27,7 @@ public:
     virtual void rollback(const ulong log_idx, buffer& data) {
         auto_lock(lock_);
         LOGINFO("Rollback[{}] : {}", log_idx, reinterpret_cast< const char* >(data.data()));
+        last_commit_idx_ = log_idx;
     }
 
     virtual void save_snapshot_data(snapshot& s, const ulong offset, buffer& data) {}

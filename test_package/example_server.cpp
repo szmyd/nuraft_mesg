@@ -1,7 +1,6 @@
 #include <cassert>
 #include <csignal>
 
-#include <libjungle/jungle.h>
 #include <nuraft_mesg/messaging.hpp>
 #include <sisl/grpc/rpc_client.hpp>
 #include <sisl/grpc/rpc_server.hpp>
@@ -13,14 +12,15 @@
 #include "uuids.h"
 
 SISL_OPTION_GROUP(server, (server_id, "", "server_id", "Servers ID (0-9)", cxxopts::value< uint32_t >(), ""),
-                  (start_group, "", "create", "Group Name to create initialy", cxxopts::value< std::string >(), ""))
+                  (start_group, "", "create", "Group Name to create initialy", cxxopts::value< std::string >(), ""),
+                  (join_group, "", "join", "Group Name to join initialy", cxxopts::value< std::string >(), ""))
 
 SISL_OPTIONS_ENABLE(logging, server, nuraft_mesg)
 SISL_LOGGING_INIT(nuraft, nuraft_mesg, grpc_server, flip)
 
-constexpr auto rpc_backoff = 50;
-constexpr auto heartbeat_period = 100;
-constexpr auto elect_to_low = heartbeat_period * 2;
+constexpr auto rpc_backoff = 250;
+constexpr auto heartbeat_period = 250;
+constexpr auto elect_to_low = heartbeat_period * 4;
 constexpr auto elect_to_high = elect_to_low * 2;
 
 static bool k_stop;
@@ -59,14 +59,6 @@ int main(int argc, char** argv) {
     sisl::logging::SetLogger(format(FMT_STRING("server_{}"), offset_id));
     spdlog::set_pattern("[%D %T] [%^%l%$] [%n] [%t] %v");
 
-    // We initialize the jungle layer here, it's used by the storage_managers
-    // we create later.
-    jungle::GlobalConfig g_config;
-    g_config.numFlusherThreads = 0;
-    g_config.numCompactorThreads = 0;
-    g_config.logFileReclaimerSleep_sec = 60;
-    jungle::init(g_config);
-
     signal(SIGINT, handle);
     signal(SIGTERM, handle);
 
@@ -95,10 +87,16 @@ int main(int argc, char** argv) {
     r_params.with_election_timeout_lower(elect_to_low)
         .with_election_timeout_upper(elect_to_high)
         .with_hb_interval(heartbeat_period)
-        .with_max_append_size(10)
+        .with_max_append_size(6)
         .with_rpc_failure_backoff(rpc_backoff)
         .with_auto_forwarding(true)
-        .with_snapshot_enabled(0);
+        .with_snapshot_enabled(6)
+        .with_log_sync_batch_size(6)
+        .with_log_sync_stopping_gap(4)
+        .with_reserved_log_items(0)
+        .with_fresh_log_gap(6)
+        .with_stale_log_gap(60)
+        .with_auto_forwarding_req_timeout(4000);
     // Each group has a type so we can attach different state_machines upon Join request.
     // This callback should provide a mechanism to return a new state_manager.
     auto group_type_params = nuraft_mesg::consensus_component::register_params{
@@ -121,6 +119,10 @@ int main(int argc, char** argv) {
     // Create a new group with ourself as the only member
     if (0 < SISL_OPTIONS.count("create")) {
         messaging.create_group(SISL_OPTIONS["create"].as< std::string >(), "test_package");
+    } else if (0 < SISL_OPTIONS.count("join")) {
+        auto const group_name = SISL_OPTIONS["join"].as< std::string >();
+        auto smgr = std::make_shared< simple_state_mgr >(offset_id, server_uuid, group_name);
+        messaging.join_group(group_name, "test_package", smgr);
     }
 
     // Just prevent main() from exiting, require a SIGNAL
